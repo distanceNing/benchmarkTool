@@ -57,12 +57,12 @@ inline bool setFdNonBlocking(int fd)
 
 }
 
-inline int64_t nowTime()
+inline uint64_t nowTime()
 {
     struct timeval tm;
     if(gettimeofday(&tm,0) < 0)
         printErrorMsg("gettimeofday");
-    return (int64_t)tm.tv_sec*1000*1000+(int64_t)tm.tv_usec;
+    return (uint64_t)tm.tv_sec*1000*1000+(int64_t)tm.tv_usec;
 }
 
 struct IpAddress {

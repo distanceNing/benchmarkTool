@@ -26,6 +26,7 @@ struct Option {
   size_t concurrent_num_;
   size_t connect_timeout_ms_;
   uint32_t interval_time_s_;
+  uint32_t duration_;
   Option()
   {
       server_ip_ = "127.0.0.1";
@@ -35,6 +36,7 @@ struct Option {
       is_keep_alive_ = false;
       thread_num_ = 1;
       interval_time_s_ = 0;
+      duration_ = 0;
   }
   static int
   process_parameters (int argc, char **argv);
@@ -45,8 +47,15 @@ struct Option {
 
 class BenchMark {
 public:
+    typedef struct {
+      uint64_t connect_time_;
+      uint64_t request_num_;
+      uint64_t response_num_;
+      uint64_t use_timer_;
+    }TestResult;
+
     BenchMark()
-            :isLoop_(false)
+            :isLoop_(false),testResult_(new TestResult[gOption.thread_num_])
     {
     }
     //当套接字可读时,用户制定的回调函数
@@ -63,9 +72,33 @@ public:
     //调用run使得测试运行起来
     void run();
 
-
+    virtual ~BenchMark(){
+        if(gOption.concurrent_num_ > 1)
+            delete []testResult_;
+        else
+            delete(testResult_);
+    }
 private:
-    void benchmark();
+
+    void handleRead(TestResult* testResult,net::SocketBuf* buf,int fd)
+    {
+        testResult->response_num_++;
+        readCallBack_(buf,fd);
+    }
+
+    void handleWrite(TestResult* testResult,int fd)
+    {
+        testResult->request_num_++;
+        writeCallBack_(fd);
+    }
+
+    void benchmark(int thread_id);
+
+
+    TestResult* testResult_;
+
+
+    void handleWrite(){}
     //std::unique_ptr<net::TimerFd> timer_;
     bool isLoop_;
     Epoll::ReadCallBack readCallBack_;

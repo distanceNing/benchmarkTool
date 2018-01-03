@@ -17,7 +17,6 @@ int main(int argc, char* argv[])
         Option::process_parameters(argc, argv);
         gOption.printCurrentOption();
     }
-
     BenchMark benchMark;
     const char* hello="hello world";
     benchMark.setWriteCallBack([hello](int fd) {

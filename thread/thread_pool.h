@@ -35,7 +35,7 @@ public:
 
     void threadTodo()
     {
-        std::cout<<Thread::getCurrentThreadID()<<" is running ---\n";
+        //std::cout<<Thread::getCurrentThreadID()<<" is running ---\n";
         while (isrunning_) {
             if ( !taskQueue_.empty()) {
                 ThreadTask task;
@@ -44,7 +44,7 @@ public:
                     task = std::move(taskQueue_.front());
                     taskQueue_.pop();
                 }
-                std::cout<<Thread::getCurrentThreadID()<<" i get a task ---\n";
+                //std::cout<<Thread::getCurrentThreadID()<<" i get a task ---\n";
                 task();
             }
         }
@@ -67,8 +67,6 @@ public:
         isrunning_ = true ;
         for (auto& thread : threads_)
             thread.run();
-
-
     }
 
 
@@ -83,14 +81,14 @@ public:
         return taskQueue_.empty();
     }
 
-    bool stopRunning()
+    void stopRunning()
     {
         isrunning_=false;
     }
 
     ~ThreadPool()
     {
-        join();
+        //join();
     }
 
 private:
