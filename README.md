@@ -8,48 +8,31 @@
 This example show how to test echoserver .
 
 ```
-main.cpp:
+your_protocol.cpp:
 
-#include "benckmark.h"
-
-int main(int argc, char* argv[])
+#include "your_protocol.h"
+// this callback when the socket is readabale.
+void readCallBack(net::SocketBuf* buf, int fd)
 {
-    if(argc < 2)
-    {
-        Option::printDefautOption();
-    }
-    else
-        Option::process_parameters(argc,argv);
-
-    BenchMark benchMark;
-
-    /*  overwrite
-     *  read call back call when the sock readable
-     *  write call back call when the sock readable
-     */
-    const char* hello="hello world";
-    benchMark.setWriteCallBack([hello](int fd) {
-      //send hello to server
-      ::send(fd, hello, strlen(hello), MSG_NOSIGNAL);
-    });
-
-    benchMark.setReadCallBack([](net::SocketBuf* buf, int fd) {
-      char recv_buf[MAX_BUF_SIZE] = {'\0'};
-      size_t readable = buf->readableBytes();
-      buf->read(recv_buf, readable);
-      // As soon as any data is received, write it back
-      ::send(fd, recv_buf, readable, MSG_NOSIGNAL);
-    });
-
-    //call benchmark run
-    benchMark.run();
-    return 0;
+    char recv_buf[MAX_BUF_SIZE] = {'\0'};
+    size_t readable = buf->readableBytes();
+    buf->read(recv_buf, readable);
+    // As soon as any data is received, write it back
+    ::send(fd, recv_buf, readable, MSG_NOSIGNAL);
 }
+//when the socket is writeable
+
+void writeCallBack(int fd)
+{
+    const char* hello="hello world";
+    ::send(fd, hello, strlen(hello), MSG_NOSIGNAL);
+}
+
 ```
 
 
 #### build：
-using cmke：
+using cmke to build this project：
 ```
 cmake CMakeLists.txt
 

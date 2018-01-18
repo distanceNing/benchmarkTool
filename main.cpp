@@ -6,6 +6,7 @@
 // Copyright (c) yangning All rights reserved.
 //
 #include "benckmark.h"
+#include "your_protocol.h"
 
 int main(int argc, char* argv[])
 {
@@ -17,21 +18,12 @@ int main(int argc, char* argv[])
         Option::process_parameters(argc, argv);
         gOption.printCurrentOption();
     }
-    BenchMark benchMark;
-    const char* hello="hello world";
-    benchMark.setWriteCallBack([hello](int fd) {
-      //send hello to server
-      ::send(fd, hello, strlen(hello), MSG_NOSIGNAL);
-    });
 
-    benchMark.setReadCallBack([](net::SocketBuf* buf, int fd) {
-      char recv_buf[MAX_BUF_SIZE] = {'\0'};
-      size_t readable = buf->readableBytes();
-      buf->read(recv_buf, readable);
-      //printf("%s\n", recv_buf);
-      // As soon as any data is received, write it back
-      ::send(fd, recv_buf, readable, MSG_NOSIGNAL);
-    });
+    BenchMark benchMark;
+
+    benchMark.setWriteCallBack(writeCallBack);
+
+    benchMark.setReadCallBack(readCallBack);
 
     benchMark.run();
     return 0;

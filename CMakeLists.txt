@@ -17,6 +17,6 @@ set(SOURCE_FILES
         thread/lock.h thread/lock.cpp
         timerfd/timer_fd.h timerfd/timer_fd.cpp
         benckmark.cpp benckmark.h
-        )
+        your_protocol.cpp your_protocol.h)
 link_libraries(pthread)
 add_executable(benckmark ${SOURCE_FILES})

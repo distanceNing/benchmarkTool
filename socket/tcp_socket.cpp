@@ -168,8 +168,6 @@ int TcpSocket::noblockingConnect(int fd, const char* conn_ip, uint16_t conn_port
                 getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &len);
                 if ( !error )
                     return 0;
-               // else if ( error == EINPROGRESS )
-                    //    goto wait;
                 else
                     return -1;
             }
