@@ -2,12 +2,12 @@
 ### benchmark:
     A simple tool to test tcp server concurrency .
 
-
+![](https://github.com/distanceNing/workspace/raw/master/doc/file_block.png) 
 
 #### example:
 This example show how to test echoserver .
 
-```
+```cpp
 your_protocol.cpp:
 
 #include "your_protocol.h"
