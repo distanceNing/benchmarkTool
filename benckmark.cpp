@@ -1,39 +1,58 @@
 #include <thread_db.h>
+#include <signal.h>
+
 #include "benckmark.h"
 #include "thread/thread_pool.h"
 #include "timerfd/timer_fd.h"
 Option gOption;
 using namespace std::placeholders;
+
+bool g_is_loop = false;
+void timerHandle(int sig)
+{
+    if(sig == SIGALRM )
+    {
+        g_is_loop = false;
+    }
+}
+
+void addsig(int sig)
+{
+    struct sigaction sa;
+    memset(&sa, 0, sizeof(sa));
+    sa.sa_handler = timerHandle;
+    sa.sa_flags |= SA_RESTART;
+    sigfillset(&sa.sa_mask);
+    sigaction(sig, &sa, NULL);
+}
+
+BenchMark::BenchMark()
+            :testResult_(new TestResult[gOption.thread_num_]){}
+
+BenchMark::~BenchMark(){
+    if(gOption.concurrent_num_ > 1)
+        delete []testResult_;
+    else
+        delete(testResult_);
+}
+
 void BenchMark::run()
 {
-    isLoop_ = true;
-    net::TimerFd timer;
-
-    if ( gOption.duration_ > 0 ) {
-        timer.setTime(gOption.duration_, 0);
-    }
-    ThreadPool threadPool(gOption.thread_num_);
-
-    for (int i = 0; i < gOption.thread_num_; ++i) {
+    g_is_loop = true;
+    //设置测试时间
+    addsig(SIGALRM);
+    addsig(SIGTERM);
+    alarm(gOption.duration_);
+ 
+    ThreadPool threadPool(gOption.thread_num_ - 1);
+   
+    for (int i = 1; i < gOption.thread_num_; ++i) {
         threadPool.appendTask(std::bind(&BenchMark::benchmark, this, i));
     }
-
     threadPool.run();
-
-    if ( gOption.duration_ > 0 ) {
-        int64_t readable;
-        ssize_t read_size = ::read(timer.getTimerFd(), &readable, sizeof(readable));
-
-        if ( read_size < 0 )
-            printErrorMsg("timerfd");
-        else
-        {
-            isLoop_ = false;
-
-        }
-    }
+    benchmark(0);
     //threadPool.join();
-    sleep(1);
+    //sleep(1);
     //统计测试结果
 
     /*
@@ -51,7 +70,7 @@ void BenchMark::run()
         total_time += testResult_[i].use_timer_;
     }
 
-    for(int i= 0;i<gOption.thread_num_;++i)
+    for(int i = 0;i < gOption.thread_num_;++i)
     {
         std::cout << "this is thread " << i << " :\n";
         std::cout << "\tconnect  time : " << gOption.concurrent_num_ << " use : " << testResult_[i].connect_time_ << " us\n";
@@ -70,11 +89,6 @@ void BenchMark::benchmark(int thread_id)
 {
 
     Epoll epoll;
-    //if ( option_.interval_time_s_ != 0 )
-    //{
-    //    timer_ = new net::TimerFd();
-    //    timer_->setTime(option_.interval_time_s_,option_.interval_time_s_);
-    //}
     TestResult* testResult = testResult_ + thread_id;
     uint64_t start_time = nowTime();
     //向主机发起连接
@@ -91,10 +105,10 @@ void BenchMark::benchmark(int thread_id)
         //printf("connect time is %d \n", i);
         net::TcpSocket::setTcpNoDelay(conn_fd);
         epoll.addNewFd(conn_fd);
-        usleep(1000);
+        //usleep(1000);
     }
     uint64_t connect_end_time = nowTime();
-    testResult->connect_time_=connect_end_time-start_time;
+    testResult->connect_time_ = connect_end_time - start_time;
 
     epoll.setReadcb(std::bind(&BenchMark::handleRead, this, testResult, _1, _2));
 
@@ -102,12 +116,9 @@ void BenchMark::benchmark(int thread_id)
       testResult->request_num_++;
       this->writeCallBack_(fd);
     });
-    while (isLoop_)
+    while (g_is_loop)
         epoll.epollWait();
     uint64_t end_time = nowTime();
-
-
-
 
     testResult->use_timer_ = end_time - connect_end_time;
 

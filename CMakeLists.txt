@@ -19,4 +19,4 @@ set(SOURCE_FILES
         benckmark.cpp benckmark.h
         your_protocol.cpp your_protocol.h)
 link_libraries(pthread)
-add_executable(benckmark ${SOURCE_FILES})
+add_executable(test ${SOURCE_FILES})

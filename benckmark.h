@@ -13,7 +13,7 @@
 
 #include <memory>
 #include <cstdio>
-extern struct Option gOption;
+
 namespace  net{
 class TimerFd;
 }
@@ -54,10 +54,7 @@ public:
       uint64_t use_timer_;
     }TestResult;
 
-    BenchMark()
-            :isLoop_(false),testResult_(new TestResult[gOption.thread_num_])
-    {
-    }
+    BenchMark();
     //当套接字可读时,用户制定的回调函数
     void setReadCallBack(const Epoll::ReadCallBack& cb)
     {
@@ -72,12 +69,7 @@ public:
     //调用run使得测试运行起来
     void run();
 
-    virtual ~BenchMark(){
-        if(gOption.concurrent_num_ > 1)
-            delete []testResult_;
-        else
-            delete(testResult_);
-    }
+    virtual ~BenchMark();
 private:
 
     void handleRead(TestResult* testResult,net::SocketBuf* buf,int fd)
@@ -100,7 +92,6 @@ private:
 
     void handleWrite(){}
     //std::unique_ptr<net::TimerFd> timer_;
-    bool isLoop_;
     Epoll::ReadCallBack readCallBack_;
     Epoll::WriteCallBack writeCallBack_;
 };

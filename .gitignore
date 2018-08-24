@@ -2,3 +2,14 @@
 cmake-build-debug
 benchmark/
 build-benchmark-Desktop_Qt_5_6_1_MinGW_32bit-Debug/
+CMakeCache.txt
+CMakeFiles/
+GPATH
+GRTAGS
+GTAGS
+Makefile
+a/
+benckmark
+cmake_install.cmake
+test
+

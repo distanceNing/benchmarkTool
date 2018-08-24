@@ -5,7 +5,6 @@
 #include "epoller.h"
 #include "../common.h"
 
-const char* hello= "hello world";
 void Epoll::handleEvent(size_t ready_num)
 {
     //处理文件描述符上发生的事件
@@ -14,7 +13,7 @@ void Epoll::handleEvent(size_t ready_num)
         struct epoll_event event =epollEventList_[i];
         if ( event.events & EPOLLOUT )
         {
-            //写入一些数据后,关闭对EPOLLOUT事件的关注
+            //驱动测试程序的执行，写入一些数据后,关闭对EPOLLOUT事件的关注
             if(writecb_)
                 writecb_(fd);
             struct epoll_event ev;
@@ -59,6 +58,9 @@ void Epoll::epollWait()
     int ready_num = epoll_wait(epoll_fd_, epollEventList_.data(), static_cast<int>(epollEventList_.size()),
             MAYBE_TIME_OUT);
     if (ready_num < 0) {
+        if(errno == EINTR){
+            return;
+        }
         printErrorMsg("epoll_wait");
     }
     else if (ready_num == 0) {

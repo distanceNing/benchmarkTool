@@ -7,7 +7,7 @@
 //
 #include "benckmark.h"
 #include "your_protocol.h"
-
+extern struct Option gOption;
 int main(int argc, char* argv[])
 {
     if ( argc < 2 ) {
